@@ -6,12 +6,14 @@ local constants = require("constants")
 local board1
 local board2
 local boardSize = 9
-local tileSize = 50
+local tileSize = 32
 local margin = 10
+local spriteMar
 
 function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
+    spriteMar = love.graphics.newImage("mar.png")
 end
 
 function love.update(dt)
@@ -34,7 +36,7 @@ function love.draw()
             elseif board1[y][x] == constants.WATER_HIT then
                 love.graphics.setColor(150, 150, 255)  -- Agua golpeada
             end
-            love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
+            love.graphics.draw(spriteMar, posX, posY, 0, tileSize/spriteMar:getWidth(), tileSize/spriteMar:getHeight())
         end
     end
     
@@ -53,7 +55,7 @@ function love.draw()
             elseif board2[y][x] == constants.WATER_HIT then
                 love.graphics.setColor(200, 200, 255)  -- Otro color para agua golpeada
             end
-            love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
+            love.graphics.draw(spriteMar, posX, posY, 0, tileSize/spriteMar:getWidth(), tileSize/spriteMar:getHeight())
         end
     end
 end

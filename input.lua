@@ -2,7 +2,7 @@
 local constants = require("constants")
 
 local function handleMouseClick(board, x, y)
-    local tileSize = 50
+    local tileSize = 32
     local gridX = math.floor(x / tileSize) + 1
     local gridY = math.floor(y / tileSize) + 1
     
