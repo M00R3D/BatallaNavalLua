@@ -1,7 +1,7 @@
 -- main.lua
 local boardModule = require("board")
-local constants = require("constants")
 local input = require("input")
+local constants = require("constants")
 
 local board1
 local board2
@@ -60,5 +60,5 @@ end
 
 function love.mousepressed(x, y, button)
     input.handleMouseClick(board1, x, y)
-    input.handleMouseClick(board2, x, y)
+    input.handleMouseClick(board2, x - (boardSize * tileSize + margin), y)
 end
