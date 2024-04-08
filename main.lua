@@ -16,11 +16,16 @@ local hud -- Variable para almacenar el objeto Hud
 local selectedSize = 1 -- Tamaño de barco seleccionado por defecto
 local rotation = 0 -- Orientación del barco (0 para horizontal, 1 para vertical)
 local boatPlaced = {false, false, false, false, false} -- Bandera para cada tamaño de barco
+local switchTime = 1 -- Tiempo en segundos para cambiar entre los sprites de agua
+local timer = 0 -- Contador de tiempo
 
 function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
-    spriteMar = love.graphics.newImage("mar.png")
+    spriteMar = love.graphics.newImage("sprite_water0.png")
+    spriteMar1 = love.graphics.newImage("sprite_water1.png")
+    spriteMar2 = love.graphics.newImage("sprite_water2.png")
+    
 
     -- Cargar sprites de los barcos
     local shipSprites = {}
@@ -35,7 +40,18 @@ function love.load()
 end
 
 function love.update(dt)
-    -- No hay necesidad de actualizar en este juego, dejar vacío
+    -- Actualizar el temporizador
+    timer = timer + dt
+
+    -- Cambiar el sprite de agua si el temporizador ha superado el tiempo de cambio
+    if timer >= switchTime then
+        timer = 0
+        if spriteMar == spriteMar1 then
+            spriteMar = spriteMar2
+        else
+            spriteMar = spriteMar1
+        end
+    end
 end
 
 function love.draw()
