@@ -21,6 +21,9 @@ local timer = 0 -- Contador de tiempo
 
 local highlightColor = {255, 255, 0, 100} -- Amarillo semitransparente
 
+-- Tamaños de los barcos en ancho
+local boatWidths = {5, 4, 3, 3, 2} -- Anchura de los barcos
+
 function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
@@ -103,13 +106,13 @@ function love.draw()
         local gridY = math.floor(mouseY / tileSize) + 1
 
         -- Dibujar la casilla resaltada si está dentro de los límites del tablero
-        if gridX <= boardSize - selectedSize + 1 and gridY <= boardSize then
+        if gridX <= boardSize - boatWidths[selectedSize] + 1 and gridY <= boardSize then
             love.graphics.setColor(highlightColor)
-            for i = 0, selectedSize - 1 do
-                local posX = (gridX + i - 1) * tileSize
-                local posY = (gridY - 1) * tileSize
-                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
-            end
+            local sizeX = boatWidths[selectedSize] * tileSize
+            local sizeY = tileSize
+            local posX = (gridX - 1) * tileSize
+            local posY = (gridY - 1) * tileSize
+            love.graphics.rectangle("fill", posX, posY, sizeX, sizeY)
         end
     end
 

@@ -1,4 +1,3 @@
-corregir los tamaños de las colisiones amarillas con su respectivo barco
 que se pueda girar con el mouse
 que no pueda chocar con otro barco
 que no pueda ponerese salido de la pantalla
