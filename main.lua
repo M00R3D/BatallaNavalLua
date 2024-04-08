@@ -3,6 +3,7 @@ local boardModule = require("board")
 local input = require("input")
 local constants = require("constants")
 local Boat = require("boat")
+local Hud = require("hud") -- Importar el módulo Hud
 
 local board1
 local board2
@@ -11,6 +12,8 @@ local tileSize = 32
 local margin = 10
 local spriteMar
 local boats = {} 
+
+local hud -- Variable para almacenar el objeto Hud
 
 function love.load()
     board1 = boardModule.createBoard(boardSize)
@@ -24,6 +27,9 @@ function love.load()
     -- Crear un barco en el tablero 2
     local boat2 = Boat:new(5, 5, 2, 1) -- Barco vertical de tamaño 2
     table.insert(boats, boat2)
+
+    -- Inicializar el objeto Hud
+    hud = Hud:new(10, 400, 20) -- Posición inicial y tamaño de los botones en el HUD
 end
 
 function love.update(dt)
@@ -49,6 +55,10 @@ function love.draw()
             love.graphics.draw(spriteMar, posX, posY, 0, tileSize/spriteMar:getWidth(), tileSize/spriteMar:getHeight())
         end
     end
+
+    -- Dibujar el objeto Hud
+    hud:draw()
+
     for _, boat in ipairs(boats) do
         if boat.orientation == 0 then -- Barco horizontal
             for i = 1, boat.size do
@@ -66,6 +76,7 @@ function love.draw()
             end
         end
     end
+
     -- Dibujar el segundo tablero al lado derecho del primero
     for y = 1, boardSize do
         for x = 1, boardSize do
@@ -89,4 +100,19 @@ end
 function love.mousepressed(x, y, button)
     input.handleMouseClick(board1, x, y)
     input.handleMouseClick(board2, x - (boardSize * tileSize + margin), y)
+
+    -- Manejar clics en el Hud
+    local sizeOptions = {1, 2, 3, 4}
+    for i, size in ipairs(sizeOptions) do
+        local posX = hud.x + (i - 1) * hud.tileSize * 2
+        local posY = hud.y
+        local width = hud.tileSize * 2
+        local height = hud.tileSize * 2
+
+        if x >= posX and x <= posX + width and y >= posY and y <= posY + height then
+            -- Si se hace clic en un botón del Hud, se establece el tamaño seleccionado
+            hud:setSelectedSize(size)
+            break
+        end
+    end
 end
