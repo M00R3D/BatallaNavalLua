@@ -2,8 +2,8 @@
 local boardModule = require("board")
 local input = require("input")
 local constants = require("constants")
-local Boat = require("boat")
 local Hud = require("hud") -- Importar el módulo Hud
+local Boat = require("boat")
 
 local board1
 local board2
@@ -20,10 +20,6 @@ function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
     spriteMar = love.graphics.newImage("mar.png")
-
-    -- Crear un barco en el tablero 1
-    local boat1 = Boat:new(1, 1, 3, rotation) -- Barco horizontal de tamaño 3
-    table.insert(boats, boat1)
 
     hud = Hud:new(10, 400, 20) -- Posición inicial y tamaño de los botones en el HUD
 end
@@ -55,23 +51,41 @@ function love.draw()
     -- Dibujar el objeto Hud
     hud:draw()
 
-    -- Dibujar los barcos en el primer océano según el tamaño seleccionado
-    local mouseX, mouseY = love.mouse.getPosition()
-    local gridX = math.floor(mouseX / tileSize) + 1
-    local gridY = math.floor(mouseY / tileSize) + 1
+    -- Dibujar el espacio que ocupará el barco antes de colocarlo
+    if selectedSize > 0 then
+        local mouseX, mouseY = love.mouse.getPosition()
+        local gridX = math.floor(mouseX / tileSize) + 1
+        local gridY = math.floor(mouseY / tileSize) + 1
 
-    for _, boat in ipairs(boats) do
-        if boat.orientation == 0 then -- Barco horizontal
+        love.graphics.setColor(0, 0, 0, 100)  -- Color negro con transparencia
+        if rotation == 0 then -- Barco horizontal
             for i = 1, selectedSize do
                 local posX = (gridX + i - 2) * tileSize
                 local posY = (gridY - 1) * tileSize
-                love.graphics.setColor(0, 0, 0)  -- Color negro
                 love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
             end
         else -- Barco vertical
             for i = 1, selectedSize do
                 local posX = (gridX - 1) * tileSize
                 local posY = (gridY + i - 2) * tileSize
+                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
+            end
+        end
+    end
+
+    -- Dibujar los barcos en el primer océano según el tamaño seleccionado
+    for _, boat in ipairs(boats) do
+        if boat.orientation == 0 then -- Barco horizontal
+            for i = 1, boat.size do
+                local posX = (boat.x + i - 2) * tileSize
+                local posY = (boat.y - 1) * tileSize
+                love.graphics.setColor(0, 0, 0)  -- Color negro
+                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
+            end
+        else -- Barco vertical
+            for i = 1, boat.size do
+                local posX = (boat.x - 1) * tileSize
+                local posY = (boat.y + i - 2) * tileSize
                 love.graphics.setColor(0, 0, 0)  -- Color negro
                 love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
             end
@@ -98,11 +112,30 @@ function love.draw()
     end
 end
 
-function love.mousepressed(x, y, button)
-    input.handleMouseClick(board1, x, y)
-    input.handleMouseClick(board2, x - (boardSize * tileSize + margin), y)
 
-    -- Manejar clics en el Hud
+function love.mousepressed(x, y, button)
+    -- Verificar si el clic está dentro del tablero 1
+    if x <= boardSize * tileSize and y <= boardSize * tileSize then
+        local gridX = math.floor(x / tileSize) + 1
+        local gridY = math.floor(y / tileSize) + 1
+
+        -- Verificar si no hay otro barco en esa posición
+        local isPositionEmpty = true
+        for _, boat in ipairs(boats) do
+            if boat.x == gridX and boat.y == gridY then
+                isPositionEmpty = false
+                break
+            end
+        end
+
+        -- Si la posición está vacía, añadir un nuevo barco
+        if isPositionEmpty then
+            local newBoat = Boat:new(gridX, gridY, selectedSize, rotation)
+            table.insert(boats, newBoat)
+        end
+    end
+
+    -- Manejar clics en la Hud
     local sizeOptions = {1, 2, 3, 4}
     for i, size in ipairs(sizeOptions) do
         local posX = hud.x + (i - 1) * hud.tileSize * 2
@@ -120,10 +153,5 @@ function love.wheelmoved(x, y)
         rotation = 0 -- Orientación horizontal
     elseif y < 0 then -- Rueda del mouse hacia abajo
         rotation = 1 -- Orientación vertical
-    end
-
-    -- Actualizar la orientación de los barcos existentes
-    for _, boat in ipairs(boats) do
-        boat.orientation = rotation
     end
 end
