@@ -15,6 +15,7 @@ local boats = {}
 local hud -- Variable para almacenar el objeto Hud
 local selectedSize = 1 -- Tamaño de barco seleccionado por defecto
 local rotation = 0 -- Orientación del barco (0 para horizontal, 1 para vertical)
+local boatPlaced = {false, false, false, false} -- Bandera para cada tamaño de barco
 
 function love.load()
     board1 = boardModule.createBoard(boardSize)
@@ -112,26 +113,27 @@ function love.draw()
     end
 end
 
-
 function love.mousepressed(x, y, button)
     -- Verificar si el clic está dentro del tablero 1
     if x <= boardSize * tileSize and y <= boardSize * tileSize then
         local gridX = math.floor(x / tileSize) + 1
         local gridY = math.floor(y / tileSize) + 1
 
-        -- Verificar si no hay otro barco en esa posición
-        local isPositionEmpty = true
-        for _, boat in ipairs(boats) do
-            if boat.x == gridX and boat.y == gridY then
-                isPositionEmpty = false
-                break
-            end
-        end
-
-        -- Si la posición está vacía, añadir un nuevo barco
-        if isPositionEmpty then
+        -- Verificar si no hay otro barco en esa posición o si el tamaño ya ha sido creado
+        if not boatPlaced[selectedSize] then
             local newBoat = Boat:new(gridX, gridY, selectedSize, rotation)
             table.insert(boats, newBoat)
+            boatPlaced[selectedSize] = true
+        else
+            -- Buscar y recolocar el barco del mismo tamaño
+            for _, boat in ipairs(boats) do
+                if boat.size == selectedSize then
+                    boat.x = gridX
+                    boat.y = gridY
+                    boat.orientation = rotation
+                    break
+                end
+            end
         end
     end
 
