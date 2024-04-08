@@ -19,6 +19,8 @@ local boatPlaced = {false, false, false, false, false} -- Bandera para cada tama
 local switchTime = 1 -- Tiempo en segundos para cambiar entre los sprites de agua
 local timer = 0 -- Contador de tiempo
 
+local highlightColor = {255, 255, 0, 100} -- Amarillo semitransparente
+
 function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
@@ -74,42 +76,11 @@ function love.draw()
         end
     end
 
-    -- Dibujar el objeto Hud
-    hud:draw()
-
-    -- Dibujar el espacio que ocupará el barco antes de colocarlo
-    if selectedSize > 0 then
-        local mouseX, mouseY = love.mouse.getPosition()
-        local gridX = math.floor(mouseX / tileSize) + 1
-        local gridY = math.floor(mouseY / tileSize) + 1
-
-        -- Obtener el sprite del barco seleccionado
-        local sprite = hud.shipSprites[selectedSize]
-
-        love.graphics.setColor(255, 255, 255)  -- Restaurar color blanco
-        if sprite then
-            -- Calcular la posición para centrar el sprite en el cursor del mouse
-            local posX = (gridX - 1) * tileSize + (tileSize - sprite:getWidth()) / 2
-            local posY = (gridY - 1) * tileSize + (tileSize - sprite:getHeight()) / 2
-            love.graphics.draw(sprite, posX, posY)
-        end
-    end
-
-    -- Dibujar los barcos en el primer océano según el tamaño seleccionado
-    for _, boat in ipairs(boats) do
-        local posX = (boat.x - 1) * tileSize
-        local posY = (boat.y - 1) * tileSize
-        local sprite = hud.shipSprites[boat.size]
-        if sprite then
-            love.graphics.setColor(255, 255, 255)  -- Color blanco
-            love.graphics.draw(sprite, posX, posY)
-        end
-    end
-
     -- Dibujar el segundo tablero al lado derecho del primero
+    local board2PosX = boardSize * tileSize + margin
     for y = 1, boardSize do
         for x = 1, boardSize do
-            local posX = boardSize * tileSize + margin + (x - 1) * tileSize
+            local posX = board2PosX + (x - 1) * tileSize
             local posY = (y - 1) * tileSize
             
             if board2[y][x] == constants.EMPTY then
@@ -124,7 +95,47 @@ function love.draw()
             love.graphics.draw(spriteMar, posX, posY, 0, tileSize/spriteMar:getWidth(), tileSize/spriteMar:getHeight())
         end
     end
+
+    -- Dibujar las casillas resaltadas donde se colocará el barco según la posición del mouse
+    if selectedSize > 0 then
+        local mouseX, mouseY = love.mouse.getPosition()
+        local gridX = math.floor(mouseX / tileSize) + 1
+        local gridY = math.floor(mouseY / tileSize) + 1
+
+        -- Dibujar la casilla resaltada si está dentro de los límites del tablero
+        if gridX <= boardSize - selectedSize + 1 and gridY <= boardSize then
+            love.graphics.setColor(highlightColor)
+            for i = 0, selectedSize - 1 do
+                local posX = (gridX + i - 1) * tileSize
+                local posY = (gridY - 1) * tileSize
+                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
+            end
+        end
+    end
+
+    -- Dibujar los barcos en el primer océano según el tamaño seleccionado
+    for _, boat in ipairs(boats) do
+        local posX = (boat.x - 1) * tileSize
+        local posY = (boat.y - 1) * tileSize
+        local sprite = hud.shipSprites[boat.size]
+        if sprite then
+            love.graphics.setColor(255, 255, 255)  -- Color blanco
+            love.graphics.draw(sprite, posX, posY)
+        end
+    end
+
+    -- Dibujar el objeto Hud
+    hud:draw()
+
+    -- Imprimir los mensajes debajo del segundo tablero
+    love.graphics.setColor(255, 255, 255)  -- Color blanco
+    local messageY = (boardSize + 1) * tileSize + margin * 2
+    for _, boat in ipairs(boats) do
+        love.graphics.print("Barco de tamaño " .. boat.size .. " en (" .. boat.x .. ", " .. boat.y .. ")", board2PosX, messageY)
+        messageY = messageY + 20 -- Ajustar la posición vertical para el próximo mensaje
+    end
 end
+
 
 function love.mousepressed(x, y, button)
     -- Verificar si el clic está dentro del tablero 1
@@ -160,6 +171,9 @@ function love.mousepressed(x, y, button)
             break
         end
     end
+
+    -- Restablecer el color después de que se haya seleccionado un tamaño de barco
+    love.graphics.setColor(255, 255, 255, 255)
 end
 
 function love.wheelmoved(x, y)
