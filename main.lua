@@ -15,14 +15,23 @@ local boats = {}
 local hud -- Variable para almacenar el objeto Hud
 local selectedSize = 1 -- Tamaño de barco seleccionado por defecto
 local rotation = 0 -- Orientación del barco (0 para horizontal, 1 para vertical)
-local boatPlaced = {false, false, false, false} -- Bandera para cada tamaño de barco
+local boatPlaced = {false, false, false, false, false} -- Bandera para cada tamaño de barco
 
 function love.load()
     board1 = boardModule.createBoard(boardSize)
     board2 = boardModule.createBoard(boardSize)
     spriteMar = love.graphics.newImage("mar.png")
 
+    -- Cargar sprites de los barcos
+    local shipSprites = {}
+    shipSprites[1] = love.graphics.newImage("portaviones.png")
+    shipSprites[2] = love.graphics.newImage("acorazado.png")
+    shipSprites[3] = love.graphics.newImage("crucero.png")
+    shipSprites[4] = love.graphics.newImage("submarino.png")
+    shipSprites[5] = love.graphics.newImage("destructor.png")
+
     hud = Hud:new(10, 400, 20) -- Posición inicial y tamaño de los botones en el HUD
+    hud:setShipSprites(shipSprites)
 end
 
 function love.update(dt)
@@ -58,38 +67,26 @@ function love.draw()
         local gridX = math.floor(mouseX / tileSize) + 1
         local gridY = math.floor(mouseY / tileSize) + 1
 
-        love.graphics.setColor(0, 0, 0, 100)  -- Color negro con transparencia
-        if rotation == 0 then -- Barco horizontal
-            for i = 1, selectedSize do
-                local posX = (gridX + i - 2) * tileSize
-                local posY = (gridY - 1) * tileSize
-                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
-            end
-        else -- Barco vertical
-            for i = 1, selectedSize do
-                local posX = (gridX - 1) * tileSize
-                local posY = (gridY + i - 2) * tileSize
-                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
-            end
+        -- Obtener el sprite del barco seleccionado
+        local sprite = hud.shipSprites[selectedSize]
+
+        love.graphics.setColor(255, 255, 255)  -- Restaurar color blanco
+        if sprite then
+            -- Calcular la posición para centrar el sprite en el cursor del mouse
+            local posX = (gridX - 1) * tileSize + (tileSize - sprite:getWidth()) / 2
+            local posY = (gridY - 1) * tileSize + (tileSize - sprite:getHeight()) / 2
+            love.graphics.draw(sprite, posX, posY)
         end
     end
 
     -- Dibujar los barcos en el primer océano según el tamaño seleccionado
     for _, boat in ipairs(boats) do
-        if boat.orientation == 0 then -- Barco horizontal
-            for i = 1, boat.size do
-                local posX = (boat.x + i - 2) * tileSize
-                local posY = (boat.y - 1) * tileSize
-                love.graphics.setColor(0, 0, 0)  -- Color negro
-                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
-            end
-        else -- Barco vertical
-            for i = 1, boat.size do
-                local posX = (boat.x - 1) * tileSize
-                local posY = (boat.y + i - 2) * tileSize
-                love.graphics.setColor(0, 0, 0)  -- Color negro
-                love.graphics.rectangle("fill", posX, posY, tileSize, tileSize)
-            end
+        local posX = (boat.x - 1) * tileSize
+        local posY = (boat.y - 1) * tileSize
+        local sprite = hud.shipSprites[boat.size]
+        if sprite then
+            love.graphics.setColor(255, 255, 255)  -- Color blanco
+            love.graphics.draw(sprite, posX, posY)
         end
     end
 
@@ -138,12 +135,11 @@ function love.mousepressed(x, y, button)
     end
 
     -- Manejar clics en la Hud
-    local sizeOptions = {1, 2, 3, 4}
+    local sizeOptions = {1, 2, 3, 4, 5}
     for i, size in ipairs(sizeOptions) do
-        local posX = hud.x + (i - 1) * hud.tileSize * 2
-        local posY = hud.y
+        local posY = hud.y + (i - 1) * hud.tileSize * 2
         local tileSize = hud.tileSize * 2
-        if x >= posX and x <= posX + tileSize and y >= posY and y <= posY + tileSize then
+        if y >= posY and y <= posY + tileSize then
             selectedSize = size
             break
         end
