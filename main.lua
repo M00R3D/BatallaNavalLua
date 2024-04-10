@@ -31,7 +31,6 @@ function love.load()
     spriteMar1 = love.graphics.newImage("sprite_water1.png")
     spriteMar2 = love.graphics.newImage("sprite_water2.png")
     
-
     -- Cargar sprites de los barcos
     local shipSprites = {}
     shipSprites[1] = love.graphics.newImage("portaviones.png")
@@ -111,7 +110,24 @@ function love.draw()
             local sizeX = boatWidths[selectedSize] * tileSize
             local sizeY = tileSize
             local posX = (gridX - 1) * tileSize
-            local posY = (gridY - 1) * tileSize
+            local posY = (gridY - 1) * tileSize - tileSize -- Ajuste para dibujar el resaltado arriba del cursor
+            
+            -- Ajustar el marcado amarillo para reflejar la orientación
+            if rotation == 1 then
+                if selectedSize == 1 then posY = posY - (4*tileSize) end
+                if selectedSize == 2 then posY = posY - (3*tileSize) end
+                if selectedSize == 3 then posY = posY - (2*tileSize) end
+                if selectedSize == 4 then posY = posY - (2*tileSize) end
+                if selectedSize == 5 then posY = posY - (1*tileSize) end
+                -- posY = posY - (selectedSize*tileSize) -- Mover una casilla hacia abajo en la orientación horizontal
+                sizeX, sizeY = sizeY, sizeX -- Intercambiar anchura y altura para la orientación vertical
+                love.graphics.print("Selected" ..selectedSize , board2PosX, messageY)
+                
+            end
+            if rotation == 0 then
+                posY = posY + (tileSize*1) -- Mover una casilla hacia abajo en la orientación horizontal
+                -- sizeX, sizeY = -sizeY, sizeX -- Intercambiar anchura y altura para la orientación vertical
+            end
             love.graphics.rectangle("fill", posX, posY, sizeX, sizeY)
         end
     end
@@ -122,8 +138,13 @@ function love.draw()
         local posY = (boat.y - 1) * tileSize
         local sprite = hud.shipSprites[boat.size]
         if sprite then
+            -- Ajustar la rotación del sprite del barco
+            local angle = 0
+            if boat.orientation == 1 then
+                angle = math.rad(-90) -- Rotación de 90 grados en sentido antihorario para orientación vertical
+            end
             love.graphics.setColor(255, 255, 255)  -- Color blanco
-            love.graphics.draw(sprite, posX, posY)
+            love.graphics.draw(sprite, posX, posY, angle)
         end
     end
 
@@ -180,9 +201,12 @@ function love.mousepressed(x, y, button)
 end
 
 function love.wheelmoved(x, y)
-    if y > 0 then -- Rueda del mouse hacia arriba
-        rotation = 0 -- Orientación horizontal
-    elseif y < 0 then -- Rueda del mouse hacia abajo
-        rotation = 1 -- Orientación vertical
+    if selectedSize > 0 then
+        -- Rueda del mouse hacia arriba
+        if y > 0 then 
+            rotation = (rotation + 1) % 2 -- Cambiar entre 0 y 1 para la orientación horizontal y vertical respectivamente
+        elseif y < 0 then -- Rueda del mouse hacia abajo
+            rotation = (rotation - 1) % 2
+        end
     end
 end

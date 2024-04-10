@@ -1,54 +1,10 @@
-que se pueda girar con el mouse
 que no pueda chocar con otro barco
 que no pueda ponerese salido de la pantalla
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+boton para indicar que has colocado
+posicionar barcos enemigos
+seleccionar coordenadas de disparo
+boton para disparar
+destruccion barcos
+confirmar si el juego debe terminar o repetirse
+hacer el loop
