@@ -240,9 +240,13 @@ function love.mousepressed(x, y, button)
 
     -- Restablecer el color después de que se haya seleccionado un tamaño de barco
     love.graphics.setColor(255, 255, 255, 255)
+
+    if hud:isButtonClicked(x + 220, y + 120) then
+        -- Acción al hacer clic a la derecha del botón
+        print("¡Se hizo clic en el área a la derecha del botón!")
+    end
+    
 end
-
-
 
 function love.wheelmoved(x, y)
     if selectedSize > 0 then

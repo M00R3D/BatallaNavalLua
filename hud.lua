@@ -8,6 +8,11 @@ function Hud:new(x, y, tileSize)
         tileSize = tileSize,
         selectedSize = 1, -- Tamaño de barco seleccionado por defecto
         shipSprites = {}, -- Tabla para almacenar los sprites de los barcos
+        buttonX = x + 220, -- Posición X del botón
+        buttonY = y + 120, -- Posición Y del botón
+        buttonWidth = 100, -- Ancho del botón
+        buttonHeight = 40, -- Altura del botón
+        buttonText = "Click me!", -- Texto del botón
     }
     setmetatable(newHud, self)
     self.__index = self
@@ -46,6 +51,11 @@ function Hud:draw()
     local selectedPosY = self.y + (self.selectedSize - 1) * self.tileSize * 2
     love.graphics.setColor(0, 255, 0)
     love.graphics.rectangle("line", self.x, selectedPosY, self.tileSize * 2, self.tileSize * 2)
+
+    -- Dibujar el botón
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.rectangle("line", self.buttonX, self.buttonY, self.buttonWidth, self.buttonHeight)
+    love.graphics.printf(self.buttonText, self.buttonX, self.buttonY + 10, self.buttonWidth, "center")
 end
 
 function Hud:setSelectedSize(selectedSize)
@@ -54,6 +64,12 @@ end
 
 function Hud:setShipSprites(shipSprites)
     self.shipSprites = shipSprites
+end
+
+-- Función para verificar si se ha hecho clic en el botón
+function Hud:isButtonClicked(mouseX, mouseY)
+    return mouseX >= self.buttonX and mouseX <= self.buttonX + self.buttonWidth and
+           mouseY >= self.buttonY and mouseY <= self.buttonY + self.buttonHeight
 end
 
 return Hud
