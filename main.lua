@@ -168,18 +168,60 @@ function love.mousepressed(x, y, button)
         local gridY = math.floor(y / tileSize) + 1
 
         -- Verificar si no hay otro barco en esa posición o si el tamaño ya ha sido creado
-        if not boatPlaced[selectedSize] then
-            local newBoat = Boat:new(gridX, gridY, selectedSize, rotation)
-            table.insert(boats, newBoat)
-            boatPlaced[selectedSize] = true
-        else
-            -- Buscar y recolocar el barco del mismo tamaño
+        local canPlace = true
+        for _, boat in ipairs(boats) do
+            if boat.size == selectedSize and boat.x == gridX and boat.y == gridY then
+                canPlace = false
+                break
+            end
+        end
+
+        -- Verificar si las coordenadas caen dentro de los límites del tablero
+        if gridX <= boardSize - boatWidths[selectedSize] + 1 and gridY <= boardSize and canPlace then
+            -- Verificar colisión con otros barcos del jugador 1
+            local collides = false
+            local newBoatCoordinates = {} -- Almacenar las coordenadas del nuevo barco
+            for i = 0, boatWidths[selectedSize] - 1 do
+                local newX, newY
+                if rotation == 0 then
+                    newX = gridX + i
+                    newY = gridY
+                else
+                    newX = gridX
+                    newY = (-1) * (gridY + i)
+                end
+                table.insert(newBoatCoordinates, {x = newX, y = newY})
+            end
+            
+            -- Verificar colisión con otros barcos
             for _, boat in ipairs(boats) do
-                if boat.size == selectedSize then
-                    boat.x = gridX
-                    boat.y = gridY
-                    boat.orientation = rotation
+                for _, coord in ipairs(newBoatCoordinates) do
+                    if boat.x == coord.x and boat.y == coord.y then
+                        collides = true
+                        break
+                    end
+                end
+                if collides then
                     break
+                end
+            end
+
+            -- Colocar el barco si no hay colisión
+            if not collides then
+                if not boatPlaced[selectedSize] then
+                    local newBoat = Boat:new(gridX, gridY, selectedSize, rotation)
+                    table.insert(boats, newBoat)
+                    boatPlaced[selectedSize] = true
+                else
+                    -- Buscar y recolocar el barco del mismo tamaño
+                    for _, boat in ipairs(boats) do
+                        if boat.size == selectedSize then
+                            boat.x = gridX
+                            boat.y = gridY
+                            boat.orientation = rotation
+                            break
+                        end
+                    end
                 end
             end
         end
@@ -199,6 +241,8 @@ function love.mousepressed(x, y, button)
     -- Restablecer el color después de que se haya seleccionado un tamaño de barco
     love.graphics.setColor(255, 255, 255, 255)
 end
+
+
 
 function love.wheelmoved(x, y)
     if selectedSize > 0 then
